@@ -12,13 +12,13 @@ Can we get a clearer picture of purposefully ambiguous political movements like 
 To answer (and refine, and expand on) these questions, OpenSOROS needs volunteers - specifically people interested in:
 
 
-1.politics! (duh)    
-     
+1. politics! (duh)    
+    
 2. memes and shitposts
-     
+  
 3. Storytelling
    
-4.analytics including:
+4. analytics including:
    
 - data mining
    
