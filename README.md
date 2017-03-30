@@ -18,7 +18,7 @@ To answer (and refine, and expand on) these questions, OpenSOROS needs volunteer
      
 3. Storytelling
    
-3.analytics including:
+4.analytics including:
    
 - data mining
    
@@ -28,8 +28,8 @@ To answer (and refine, and expand on) these questions, OpenSOROS needs volunteer
    
 - social network analysis
     
-4. Graphic Design ( as evidenced by our current working logo)
+5. Graphic Design ( as evidenced by our current working logo)
    
-5. Databases, Search   
+6. Web Development   
     
 6. ?????
