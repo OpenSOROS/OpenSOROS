@@ -1,3 +1,14 @@
+```
+                        _____  ___________ _____ _____ 
+                       /  ___||  _  | ___ \  _  /  ___|
+  ___  _ __   ___ _ __ \ `--. | | | | |_/ / | | \ `--. 
+ / _ \| '_ \ / _ \ '_ \ `--. \| | | |    /| | | |`--. \
+| (_) | |_) |  __/ | | /\__/ /\ \_/ / |\ \\ \_/ /\__/ /
+ \___/| .__/ \___|_| |_\____/  \___/\_| \_|\___/\____/ 
+      | |                                              
+      |_|                                                        
+```
+
 OpenSOROS is a project to aggregate, analyze, visualize, and explain new types of discourse occurring on social media, from the bowels of 4chan, to the meme pages of leftbook, to the subreddits of the alt-right. The project seeks to learn about the factions duking it out in this political battleground which spans across countries, social media platforms, and languages. Its guided by questions like:
      
 How does belief in conspiracy theories vary with other political beliefs?
