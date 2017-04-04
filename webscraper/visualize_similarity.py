@@ -7,6 +7,7 @@ import sys
 import string
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 import multiprocessing
 import sklearn.manifold
@@ -18,7 +19,6 @@ IMAGE_DIR = "../images"
 PNG = ".png"
 TSNE = "-T-SNE-"
 MDS = "MDS"
-
 
 
 def preprocessDocs(subreddits):
@@ -75,7 +75,10 @@ def visualizeSimilarities(subreddits, names, model, id):
 
     # some random colours for the scatterplot
     colours = cm.rainbow(np.linspace(0,1, len(names)))
+
     # Try t-SNE first 
+
+    # In 2D... 
 
     tsne = sklearn.manifold.TSNE(n_components=2, metric = "precomputed")
     Y = tsne.fit_transform(similarityMatrix)
@@ -90,10 +93,29 @@ def visualizeSimilarities(subreddits, names, model, id):
     ax.legend()
 
 
-    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names) + TSNE + PNG)
+    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names) + TSNE + "2D" + PNG)
     plt.savefig(image_path)
 
-    # Then MDS 
+    # ... and in 3D
+
+    tsne = sklearn.manifold.TSNE(n_components=3, metric = "precomputed")
+    Y = tsne.fit_transform(similarityMatrix)
+
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111,projection='3d')
+    idx = 0
+    for i in range(0,len(names)):
+        next_idx = idx + len(subreddits[i])
+        ax.scatter(Y[idx:next_idx,0], Y[idx:next_idx, 1], Y[idx:next_idx, 2], c = colours[i],  label = names[i])
+        idx = next_idx
+    ax.legend(loc = 'best')
+
+
+    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names) + TSNE + "3D" + PNG)
+    plt.savefig(image_path)
+
+    # Then MDS, in 2D
 
     mds = sklearn.manifold.MDS(n_components=2, dissimilarity = "precomputed")
     Y = mds.fit_transform(similarityMatrix)
@@ -107,7 +129,25 @@ def visualizeSimilarities(subreddits, names, model, id):
         idx = next_idx
     ax.legend()
 
-    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names) + MDS + PNG)
+    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names) + MDS + "2D" + PNG)
+    plt.savefig(image_path)
+
+    # ... and 3D
+
+    mds = sklearn.manifold.MDS(n_components=3, dissimilarity = "precomputed")
+    Y = mds.fit_transform(similarityMatrix)
+
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111,projection='3d')
+    idx = 0
+    for i in range(0,len(names)):
+        next_idx = idx + len(subreddits[i])
+        ax.scatter(Y[idx:next_idx,0], Y[idx:next_idx, 1], Y[idx:next_idx, 2], c = colours[i],  label = names[i])
+        idx = next_idx
+    ax.legend(loc = 'best')
+
+    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names) + MDS + "3D" + PNG)
     plt.savefig(image_path)
 
 
