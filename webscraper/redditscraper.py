@@ -44,7 +44,7 @@ def makeFileName(subreddit,date):
 def main():
     currentdatetime = str(time.localtime()[1])+"-"+str(time.localtime()[2])+"-"+str(time.localtime()[0])+"_"+str(time.localtime()[3])+":"+str(time.localtime()[4])+":"+zeropad(time.localtime()[5])
     subreddit = sys.argv[1]    
-    print "scraping r/"+subreddit+" at: "+currentdatetime
+    print("scraping r/"+subreddit+" at: "+currentdatetime)
     
     titles = printTitles(subreddit)
 
@@ -61,5 +61,5 @@ def main():
         for t in encodedTitles:
             writer.writerow([t])
 
-
-main()
+if __name__ == "__main__":
+    main()
