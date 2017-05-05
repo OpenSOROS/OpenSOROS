@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import redditscraper
-import reddit_similarity as rs
+import scrapers.reddit_scraper as rs 
+import scrapers.fb_scraper as fs
+import models
+import argparse
 import sys
 import string
 import numpy as np
@@ -19,37 +21,6 @@ IMAGE_DIR = "../images"
 PNG = ".png"
 TSNE = "-T-SNE-"
 MDS = "MDS"
-
-
-def preprocessDocs(subreddits):
-    """
-    Convert the lists of sentences into a doc2vec suitable format.
-    Args: 
-        subreddits (String[][]) - array of arrays of sentences, where each sentence will constitute a doc for doc2vec
-    Returns:
-        docs (TaggedDocument[]) - array of TaggedDocument objects ready to be passed into doc2vec
-        id (int) - number of doc vectors 
-    """
-    docs = []
-    id = 0
-    for subreddit in subreddits:
-        for title in subreddit:
-            docs.append(doc2vec.TaggedDocument(title.translate(title.maketrans('','', string.punctuation)).split(" "), [id]))
-            id += 1
-
-    return docs, id
-            
-
-
-def trainDoc2Vec(docs): 
-    """
-    Train the doc2vec model on an array of TaggedDocuments.
-    """
-
-    cores = multiprocessing.cpu_count()
-    model = doc2vec.Doc2Vec(docs, size=100, window=10, min_count=2, workers=cores)
-
-    return model
 
 def visualizeSimilarities(subreddits, names, model, id):
 
@@ -152,11 +123,27 @@ def visualizeSimilarities(subreddits, names, model, id):
 
 
 def main():
-    subreddits = sys.argv[1:]
-    titles = [redditscraper.printTitles(subreddit) for subreddit in subreddits]
-    docs, id = rs.preprocessDocs(titles)
-    model = rs.trainDoc2Vec(docs)
-    visualizeSimilarities(titles,subreddits,model, id)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--reddit', metavar='SUBREDDIT', type=str, nargs='+', help='list of subreddits to scrape')
+    parser.add_argument('--fb', metavar='PAGE_ID', type=str, nargs='+', help='list of Facebook page ids to scrape')
+    parser.add_argument('--num_comments', default = 50, type=int, help='the number of facebook comments to scrape per post')
+    parser.add_argument('--num_posts', default = 50, type=int, help='the number of facebook posts to scrape per page')
+    args = parser.parse_args()
+
+    comments = []
+    titles = []
+
+    if args.fb is not None:
+        comments = [fs.get_comments_from_id(page_id, args.num_posts, args.num_comments) for page_id in args.fb]
+
+    if args.reddit is not None:
+        titles = [rs.printTitles(subreddit) for subreddit in args.reddit]
+
+    docs, id = models.preprocessDocs(comments+titles)
+    model = models.trainDoc2Vec(docs)
+
+    visualizeSimilarities(comments+titles,args.fb+args.reddit, model, id)
 
 if __name__ == "__main__":
     main()

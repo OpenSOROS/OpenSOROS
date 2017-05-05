@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import redditscraper
 import sys
 import string
 import numpy as np
@@ -12,12 +11,6 @@ import sklearn.manifold
 import os.path
 import os
 from gensim.models import doc2vec
-
-IMAGE_DIR = "../images"
-PNG = ".png"
-TSNE = "-T-SNE-"
-MDS = "MDS"
-
 
 
 def preprocessDocs(subreddits):
@@ -60,15 +53,3 @@ def getMostSimilarSentences(docs, id, model, num_sentences = 10):
             print("Most similar sentence: " + " ".join(docs[sims[0][0]].words))
         except Exception as e:
             pass
-
-
-def main():
-    subreddits = sys.argv[1:]
-    titles = [redditscraper.printTitles(subreddit) for subreddit in subreddits]
-    docs, id = preprocessDocs(titles)
-    model = trainDoc2Vec(docs)
-
-    getMostSimilarSentences(docs, id, model, 10)
-
-if __name__ == "__main__":
-    main()
