@@ -5,6 +5,8 @@ import datetime
 import csv
 import time
 import sys
+
+#You'll need to get your own access token 
 from config import ACCESS_TOKEN
 
 BASE = "https://graph.facebook.com/v2.9"
