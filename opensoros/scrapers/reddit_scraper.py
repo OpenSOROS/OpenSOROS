@@ -13,8 +13,12 @@ import requests
 import time
 import sys
 import csv
+import praw 
+try:
+    from . import config
+except Exception as e:
+    pass
 
-filepath = "data/"
 
 def zeropad(n): 
     if(n<10):
@@ -38,8 +42,26 @@ def printTitles(subreddit):
 
     return titles
 
+def get_comments_from_subreddit(subreddit, num_comments):
+
+    r = praw.Reddit(user_agent="George Soros", client_id=config.REDDIT_ID, client_secret=config.REDDIT_SECRET)
+    subreddit = r.get_subreddit(subreddit)
+
+    comments = []
+    new_comments = subreddit.get_comments(limit=None)
+
+    while (len(new_comments) > 0 and len(comments) <= num_comments):
+        comments += new_comments
+        new_comments = subreddit.get_comments(limit=None)
+
+    return comments
+
 def makeFileName(subreddit,date):
     return "r_  "+subreddit+"_"+date+".csv"
+
+def get_messages_from_comments(comments):
+
+    return [comment[0] for comment in comments]
 
 def main():
     currentdatetime = str(time.localtime()[1])+"-"+str(time.localtime()[2])+"-"+str(time.localtime()[0])+"_"+str(time.localtime()[3])+":"+str(time.localtime()[4])+":"+zeropad(time.localtime()[5])
@@ -60,6 +82,7 @@ def main():
         writer = csv.writer(f)
         for t in encodedTitles:
             writer.writerow([t])
+
 
 if __name__ == "__main__":
     main()

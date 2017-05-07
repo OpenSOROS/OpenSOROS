@@ -1,0 +1,129 @@
+from datetime import datetime
+import csv
+import time
+import sys
+import os
+import os.path
+
+
+DATA_DIR = "../data"
+DIM_REDUCED = "_T-SNE"
+SIMILARITY = "_similarity_matrix"
+
+
+DATA_HEADERS = ["message", "id", "date"]
+PLOT_HEADERS = ['x', 'y', 'label']
+
+
+def comments_to_csv(name, id, comments,type):
+	"""
+	Saves all the comments from a given source into a csv file. 
+
+		Args:
+			name(str) - the name of the file to save the data to 
+			id(str) - the name of the data source (i.e facebook page name, twitter handle)
+			comments - the data to save; comments are expected to be in the format of a list of tuples (text (str) time_created (datetime))
+
+	"""
+
+	if not os.path.exists(DATA_DIR):
+		os.makedirs(DATA_DIR)
+
+	file_dir = os.path.join(DATA_DIR, name + '.csv')
+
+	# If no such file exists, create a new file 
+
+	if not os.path.exists(file_dir):
+		with open(file_dir, 'w') as f:
+			writer = csv.writer(f)
+			writer.writerow(DATA_HEADERS)
+			for comment in comments:
+				try:
+					writer.writerow([comment[0], id+type, comment[1].strftime('%c')])
+				except Exception as e:
+					pass
+
+	# Otherwise append to the end of the old file (do not overwrite)
+	else:
+		with open(file_dir, 'a') as f:
+			writer = csv.writer(f)
+			for comment in comments:
+				try:
+					writer.writerow([comment[0], id+type, comment[1].strftime('%c')])
+				except Exception as e:
+					pass
+
+
+def plot_to_csv(name, matrix, labels):
+	"""
+	Save the details of the dimensionality reduction vis into a csv file.
+
+	Args:
+		name (str): the name of the csv file to save the data to 
+		matrix (np.array): the matrix containing the x- and y- coordinates of each point in the plot
+		labels (str[]): the labels for each point 
+	"""
+
+	if not os.path.exists(DATA_DIR):
+		os.makedirs(DATA_DIR)
+
+	file_dir = os.path.join(DATA_DIR, name + DIM_REDUCED + '.csv')
+
+	# write csv -- 
+
+	with open(file_dir, 'w') as f:
+		writer = csv.writer(f)
+		writer.writerow(PLOT_HEADERS)
+		for i in range(0,len(labels)):
+			writer.writerow([str(matrix[i, 0]), str(matrix[i, 1]), labels[i]])
+
+
+def similarity_to_csv(name, matrix, labels):
+	"""
+	Save similarity matrix of the vectors into a csv file.
+
+	Args:
+		name (str): the name of the csv file to save the data to 
+		matrix (np.array): the similarity matrix where matrix[i,j] contains the similarity score (0-1) between vectors i and j 
+		labels (str[]): the labels for each vector
+	"""
+	if not os.path.exists(DATA_DIR):
+		os.makedirs(DATA_DIR)
+
+	file_dir = os.path.join(DATA_DIR, name + SIMILARITY + '.csv')
+
+	# write csv -- 
+
+	with open(file_dir, 'w') as f:
+		writer = csv.writer(f)
+		writer.writerow(labels)
+		for i in range(0,len(labels)):
+			writer.writerow(matrix[i,:])
+
+
+def parse_csv(name):
+
+	file_dir = os.path.join(DATA_DIR, name + ".csv")
+
+	args = {}
+
+	with open(file_dir, 'r') as f:
+		reader = csv.reader(f)
+		for row in reader:
+			type = row[0]
+			if type not in args:
+				args[type] = [row[1]]
+			else:
+				args[type].append(row[1])
+
+	results = []
+	for key in args:
+		results.append("--" + key)
+		results += args[key]
+
+	return results
+
+
+
+
+
