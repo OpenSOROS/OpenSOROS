@@ -159,6 +159,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--sheetname', type=str, help='The name of the sheet where the list of sources is contained')
+    parser.add_argument('--startrow', type=int, default = 0, help='The row of the sheet to start scraping from')
     parser.add_argument('--reddit', metavar='SUBREDDIT', type=str, nargs='+', help='list of subreddits to scrape')
     parser.add_argument('--fb', metavar='PAGE_ID', type=str, nargs='+', help='list of Facebook page ids to scrape')
     parser.add_argument('--twitter', metavar='TWITTER_HANDLE', type=str, nargs='+', help='list of Twitter handles to scrape')
@@ -170,7 +171,7 @@ def main():
     args = parser.parse_args()
     sheet = args.sheetname
     if sheet is not None:
-        args = parser.parse_args(csv_utils.parse_csv(sheet))
+        args = parser.parse_args(['--name', args.name, '--num_comments', args.num_comments, '--num_reddit_comments', args.num_reddit_comments, '--num_posts', args.num_posts] + csv_utils.parse_csv(sheet, args.startrow))
 
     comments = []
     titles = []

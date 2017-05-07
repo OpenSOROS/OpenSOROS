@@ -6,7 +6,7 @@ import os
 import os.path
 
 
-DATA_DIR = "../data"
+DATA_DIR = os.path.join("..", "data")
 SIMILARITY = "_similarity_matrix"
 
 
@@ -100,7 +100,7 @@ def similarity_to_csv(name, matrix, labels):
 			writer.writerow([matrix[i,j] for j in range(len(labels))])
 
 
-def parse_csv(name):
+def parse_csv(name, startrow):
 
 	file_dir = os.path.join(DATA_DIR, name + ".csv")
 
@@ -108,7 +108,7 @@ def parse_csv(name):
 
 	with open(file_dir, 'r') as f:
 		reader = csv.reader(f)
-		for row in reader:
+		for row in reader[startrow:]:
 			type = row[0]
 			if type not in args:
 				args[type] = [row[1]]
