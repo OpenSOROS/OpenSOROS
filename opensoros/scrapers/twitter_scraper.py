@@ -50,7 +50,7 @@ def get_tweets_from_screenname(screen_name):
 		oldest = alltweets[-1].id - 1
 
 
-	outtweets = [(tweet.text, tweet.created_at) for tweet in alltweets]
+	outtweets = [(tweet.text.encode('utf-8').decode('utf-8'), tweet.created_at) for tweet in alltweets]
 
 	return outtweets
 

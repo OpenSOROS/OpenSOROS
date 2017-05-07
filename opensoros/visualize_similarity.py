@@ -69,7 +69,7 @@ def visualizeSimilarities(subreddits, names, model, id, save_csv = False, name =
     Y = tsne.fit_transform(similarityMatrix)
 
     if save_csv:
-        csv_utils.plot_to_csv(name, Y, names)
+        csv_utils.plot_to_csv(name+TSNE+"2D", Y, names)
 
 
     fig, ax = plt.subplots()
@@ -88,6 +88,9 @@ def visualizeSimilarities(subreddits, names, model, id, save_csv = False, name =
 
     tsne = sklearn.manifold.TSNE(n_components=3, metric = "precomputed")
     Y = tsne.fit_transform(similarityMatrix)
+
+    if save_csv:
+        csv_utils.plot_to_csv(name+TSNE+"3D", Y, names)
 
 
     fig = plt.figure()
@@ -108,6 +111,9 @@ def visualizeSimilarities(subreddits, names, model, id, save_csv = False, name =
     mds = sklearn.manifold.MDS(n_components=2, dissimilarity = "precomputed")
     Y = mds.fit_transform(similarityMatrix)
 
+    if save_csv:
+        csv_utils.plot_to_csv(name+MDS+"2D", Y, names)
+
 
     fig, ax = plt.subplots()
     idx = 0
@@ -124,6 +130,9 @@ def visualizeSimilarities(subreddits, names, model, id, save_csv = False, name =
 
     mds = sklearn.manifold.MDS(n_components=3, dissimilarity = "precomputed")
     Y = mds.fit_transform(similarityMatrix)
+
+    if save_csv:
+        csv_utils.plot_to_csv(name+MDS+"3D", Y, names)
 
 
     fig = plt.figure()
@@ -189,7 +198,7 @@ def main():
         for subreddit in subreddits:
             titles_full = rs.get_comments_from_subreddit(subreddit, args.num_reddit_comments)
             titles.append([(" ").join(rs.get_messages_from_comments(titles_full))])
-            csv_utils.comments_to_csv(args.name, reddit, titles_full, TYPE_REDDIT)
+            csv_utils.comments_to_csv(args.name, subreddit, titles_full, TYPE_REDDIT)
 
     print("Done saving CSV")
 

@@ -14,6 +14,7 @@ import time
 import sys
 import csv
 import praw 
+from datetime import datetime
 try:
     from . import config
 except Exception as e:
@@ -42,17 +43,16 @@ def printTitles(subreddit):
 
     return titles
 
-def get_comments_from_subreddit(subreddit, num_comments):
+def get_comments_from_subreddit(subreddit_name, num_comments):
 
     r = praw.Reddit(user_agent="George Soros", client_id=config.REDDIT_ID, client_secret=config.REDDIT_SECRET)
-    subreddit = r.get_subreddit(subreddit)
-
     comments = []
-    new_comments = subreddit.get_comments(limit=None)
 
-    while (len(new_comments) > 0 and len(comments) <= num_comments):
-        comments += new_comments
-        new_comments = subreddit.get_comments(limit=None)
+    for sub in r.subreddit(subreddit_name).new(limit=num_comments):
+        submission = r.submission(id=sub.id)
+        submission.comments.replace_more(limit=0)
+        for comment in submission.comments.list():
+            comments.append((comment.body.encode('utf-8').decode('utf-8'), datetime.fromtimestamp(comment.created)))
 
     return comments
 

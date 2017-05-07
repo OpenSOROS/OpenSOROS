@@ -7,7 +7,6 @@ import os.path
 
 
 DATA_DIR = "../data"
-DIM_REDUCED = "_T-SNE"
 SIMILARITY = "_similarity_matrix"
 
 
@@ -67,7 +66,7 @@ def plot_to_csv(name, matrix, labels):
 	if not os.path.exists(DATA_DIR):
 		os.makedirs(DATA_DIR)
 
-	file_dir = os.path.join(DATA_DIR, name + DIM_REDUCED + '.csv')
+	file_dir = os.path.join(DATA_DIR, name + '.csv')
 
 	# write csv -- 
 
@@ -98,7 +97,7 @@ def similarity_to_csv(name, matrix, labels):
 		writer = csv.writer(f)
 		writer.writerow(labels)
 		for i in range(0,len(labels)):
-			writer.writerow(matrix[i,:])
+			writer.writerow([matrix[i,j] for j in range(len(labels))])
 
 
 def parse_csv(name):
