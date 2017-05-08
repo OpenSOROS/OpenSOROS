@@ -30,7 +30,11 @@ def preprocessDocs(subreddits):
             id += 1
 
     return docs, id
-            
+
+
+def getDoc2VecSimilarityMatrix(model, id):
+
+    return np.matrix([[np.max([0, 1 - model.docvecs.similarity(i,j)]) for i in range(id)] for j in range(id)]) 
 
 
 def trainDoc2Vec(docs): 

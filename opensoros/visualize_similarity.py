@@ -3,9 +3,12 @@
 
 import scrapers.reddit_scraper as rs 
 import scrapers.fb_scraper as fs
+import scrapers.twitter_scraper as ts
 import models
+import time
 import argparse
 import sys
+import csv
 import string
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,14 +18,23 @@ import multiprocessing
 import sklearn.manifold
 import os.path
 import os
+import csv_utils
 from gensim.models import doc2vec
 
 IMAGE_DIR = "../images"
+DATA_DIR = "../data"
+
 PNG = ".png"
 TSNE = "-T-SNE-"
 MDS = "MDS"
 
-def visualizeSimilarities(subreddits, names, model, id):
+TYPE_FB = "_fb"
+TYPE_TWITTER = "_twitter"
+TYPE_REDDIT = "_reddit"
+
+HEADERS = ['x', 'y', 'label']
+
+def visualizeSimilarities(subreddits, names, model, id, save_csv = False, name = ""):
 
     """
     Visualize the similarities between the subreddit data, labelling the points according to the subreddit they came from.
@@ -41,7 +53,9 @@ def visualizeSimilarities(subreddits, names, model, id):
 
 
     # First get the similarity matrix using the doc2vec cosine similarity metric
-    similarityMatrix = np.matrix([[np.max([0, 1 - model.docvecs.similarity(i,j)]) for i in range(id)] for j in range(id)]) 
+    similarityMatrix = models.getDoc2VecSimilarityMatrix(model, id)
+    if save_csv:
+        csv_utils.similarity_to_csv(name, similarityMatrix, names)
     # using 1-similarity to convert to distance
 
     # some random colours for the scatterplot
@@ -53,6 +67,9 @@ def visualizeSimilarities(subreddits, names, model, id):
 
     tsne = sklearn.manifold.TSNE(n_components=2, metric = "precomputed")
     Y = tsne.fit_transform(similarityMatrix)
+
+    if save_csv:
+        csv_utils.plot_to_csv(name+TSNE+"2D", Y, names)
 
 
     fig, ax = plt.subplots()
@@ -71,6 +88,9 @@ def visualizeSimilarities(subreddits, names, model, id):
 
     tsne = sklearn.manifold.TSNE(n_components=3, metric = "precomputed")
     Y = tsne.fit_transform(similarityMatrix)
+
+    if save_csv:
+        csv_utils.plot_to_csv(name+TSNE+"3D", Y, names)
 
 
     fig = plt.figure()
@@ -91,6 +111,9 @@ def visualizeSimilarities(subreddits, names, model, id):
     mds = sklearn.manifold.MDS(n_components=2, dissimilarity = "precomputed")
     Y = mds.fit_transform(similarityMatrix)
 
+    if save_csv:
+        csv_utils.plot_to_csv(name+MDS+"2D", Y, names)
+
 
     fig, ax = plt.subplots()
     idx = 0
@@ -108,6 +131,9 @@ def visualizeSimilarities(subreddits, names, model, id):
     mds = sklearn.manifold.MDS(n_components=3, dissimilarity = "precomputed")
     Y = mds.fit_transform(similarityMatrix)
 
+    if save_csv:
+        csv_utils.plot_to_csv(name+MDS+"3D", Y, names)
+
 
     fig = plt.figure()
     ax = fig.add_subplot(111,projection='3d')
@@ -122,28 +148,65 @@ def visualizeSimilarities(subreddits, names, model, id):
     plt.savefig(image_path)
 
 
+
+
+
+
 def main():
 
+    currentdatetime = str(str(time.localtime()[1])+"-"+str(time.localtime()[2])+"-"+str(time.localtime()[0])+"_"+str(time.localtime()[3]))
+
     parser = argparse.ArgumentParser()
+
+    parser.add_argument('--sheetname', type=str, help='The name of the sheet where the list of sources is contained')
+    parser.add_argument('--startrow', type=int, default = 0, help='The row of the sheet to start scraping from')
     parser.add_argument('--reddit', metavar='SUBREDDIT', type=str, nargs='+', help='list of subreddits to scrape')
     parser.add_argument('--fb', metavar='PAGE_ID', type=str, nargs='+', help='list of Facebook page ids to scrape')
+    parser.add_argument('--twitter', metavar='TWITTER_HANDLE', type=str, nargs='+', help='list of Twitter handles to scrape')
+    parser.add_argument('--name', default = currentdatetime, type=str, help='the name of the csv files that the data will be stored in')
     parser.add_argument('--num_comments', default = 50, type=int, help='the number of facebook comments to scrape per post')
+    parser.add_argument('--num_reddit_comments', default = 5000, type=int, help='the maximum number of Reddit comments to scrape per post')
     parser.add_argument('--num_posts', default = 50, type=int, help='the number of facebook posts to scrape per page')
+
     args = parser.parse_args()
+    sheet = args.sheetname
+    if sheet is not None:
+        args = parser.parse_args(['--name', args.name, '--num_comments', args.num_comments, '--num_reddit_comments', args.num_reddit_comments, '--num_posts', args.num_posts] + csv_utils.parse_csv(sheet, args.startrow))
 
     comments = []
     titles = []
+    tweets = []
+    page_ids = []
+    subreddits = []
+    twitters = []
 
     if args.fb is not None:
-        comments = [fs.get_comments_from_id(page_id, args.num_posts, args.num_comments) for page_id in args.fb]
+        page_ids = args.fb
+        for page_id in page_ids:
+            comments_full = fs.get_comments_from_id(page_id, args.num_posts, args.num_comments)
+            comments.append([(" ").join(fs.get_messages_from_comments(comments_full))])
+            csv_utils.comments_to_csv(args.name, page_id, comments_full, TYPE_FB)
+
+    if args.twitter is not None:
+        twitters = args.twitter
+        for twitter in twitters:
+            tweets_full = ts.get_tweets_from_screenname(twitter)
+            tweets.append([(" ").join(ts.get_messages_from_comments(tweets_full))])
+            csv_utils.comments_to_csv(args.name, twitter, tweets_full, TYPE_TWITTER)
 
     if args.reddit is not None:
-        titles = [rs.printTitles(subreddit) for subreddit in args.reddit]
+        subreddits = args.reddit
+        for subreddit in subreddits:
+            titles_full = rs.get_comments_from_subreddit(subreddit, args.num_reddit_comments)
+            titles.append([(" ").join(rs.get_messages_from_comments(titles_full))])
+            csv_utils.comments_to_csv(args.name, subreddit, titles_full, TYPE_REDDIT)
 
-    docs, id = models.preprocessDocs(comments+titles)
+    print("Done saving CSV")
+
+    docs, id = models.preprocessDocs(comments+titles+tweets)
     model = models.trainDoc2Vec(docs)
 
-    visualizeSimilarities(comments+titles,args.fb+args.reddit, model, id)
+    visualizeSimilarities(comments+titles+tweets, page_ids + subreddits+twitters, model, id, save_csv=True, name = args.name)
 
 if __name__ == "__main__":
     main()
