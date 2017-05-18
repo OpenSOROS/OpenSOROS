@@ -32,7 +32,8 @@ def get_tweets_from_screenname(screen_name):
 	alltweets.extend(new_tweets)
 	
 	#save the id of the oldest tweet less one
-	oldest = alltweets[-1].id - 1
+	if len(new_tweets) > 0:
+		oldest = alltweets[-1].id - 1
 	
 	#keep grabbing tweets until there are no tweets left to grab
 	while len(new_tweets) > 0:

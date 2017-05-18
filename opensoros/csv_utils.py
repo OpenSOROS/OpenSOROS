@@ -6,7 +6,7 @@ import os
 import os.path
 
 
-DATA_DIR = os.path.join("..", "data")
+DATA_DIR = "data"
 SIMILARITY = "_similarity_matrix"
 
 
@@ -25,10 +25,10 @@ def comments_to_csv(name, id, comments,type):
 
 	"""
 
-	if not os.path.exists(DATA_DIR):
-		os.makedirs(DATA_DIR)
+	if not os.path.exists(os.path.join(os.getcwd(),DATA_DIR)):
+		os.makedirs(os.path.join(os.getcwd(),DATA_DIR))
 
-	file_dir = os.path.join(DATA_DIR, name + '.csv')
+	file_dir = os.path.join(os.getcwd(), DATA_DIR, name + '.csv')
 
 	# If no such file exists, create a new file 
 
@@ -63,10 +63,10 @@ def plot_to_csv(name, matrix, labels):
 		labels (str[]): the labels for each point 
 	"""
 
-	if not os.path.exists(DATA_DIR):
-		os.makedirs(DATA_DIR)
+	if not os.path.exists(os.path.join(os.getcwd(),DATA_DIR)):
+		os.makedirs(os.path.join(os.getcwd(),DATA_DIR))
 
-	file_dir = os.path.join(DATA_DIR, name + '.csv')
+	file_dir = os.path.join(os.getcwd(), DATA_DIR, name + '.csv')
 
 	# write csv -- 
 
@@ -86,10 +86,10 @@ def similarity_to_csv(name, matrix, labels):
 		matrix (np.array): the similarity matrix where matrix[i,j] contains the similarity score (0-1) between vectors i and j 
 		labels (str[]): the labels for each vector
 	"""
-	if not os.path.exists(DATA_DIR):
-		os.makedirs(DATA_DIR)
+	if not os.path.exists(os.path.join(os.getcwd(),DATA_DIR)):
+		os.makedirs(os.path.join(os.getcwd(),DATA_DIR))
 
-	file_dir = os.path.join(DATA_DIR, name + SIMILARITY + '.csv')
+	file_dir = os.path.join(os.getcwd(), DATA_DIR, name + SIMILARITY + '.csv')
 
 	# write csv -- 
 
@@ -100,20 +100,24 @@ def similarity_to_csv(name, matrix, labels):
 			writer.writerow([matrix[i,j] for j in range(len(labels))])
 
 
-def parse_csv(name, startrow):
+def parse_csv(name, startrow=0):
 
-	file_dir = os.path.join(DATA_DIR, name + ".csv")
+	file_dir = os.path.join(os.getcwd(), DATA_DIR, name + ".csv")
 
 	args = {}
 
+	idx = 0
+
 	with open(file_dir, 'r') as f:
 		reader = csv.reader(f)
-		for row in reader[startrow:]:
-			type = row[0]
-			if type not in args:
-				args[type] = [row[1]]
-			else:
-				args[type].append(row[1])
+		for row in reader:
+			if idx >= startrow:
+				type = row[0]
+				if type not in args:
+					args[type] = [row[1]]
+				else:
+					args[type].append(row[1])
+			idx += 1
 
 	results = []
 	for key in args:
@@ -121,6 +125,36 @@ def parse_csv(name, startrow):
 		results += args[key]
 
 	return results
+
+def read_data_from_csv(name, startrow = 1):
+
+	file_dir = os.path.join(os.getcwd(), DATA_DIR, name + ".csv")
+
+	names = []
+	comments = []
+	current_comment = ""
+	current_name = ""
+	idx = 0
+
+	with open(file_dir, 'r') as f:
+		reader = csv.reader(f)
+		for row in reader:
+			if idx >= startrow and len(row) > 0:
+				name = row[1]
+				if name != current_name:
+					if current_name != "":
+						names.append(current_name)
+						comments.append([current_comment])
+						print(current_name + " done")
+					current_name = name
+					current_comment = ""
+				current_comment += (" " + row[0])
+			idx += 1
+
+	print("Done.")
+
+	return names, comments 
+
 
 
 
