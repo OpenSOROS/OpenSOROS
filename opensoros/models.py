@@ -12,6 +12,8 @@ import os.path
 import os
 from gensim.models import doc2vec
 
+MODEL_PATH = os.path.join(os.getcwd(), "models")
+
 
 def preprocessDocs(subreddits):
     """
@@ -37,13 +39,19 @@ def getDoc2VecSimilarityMatrix(model, id):
     return np.matrix([[np.max([0, 1 - model.docvecs.similarity(i,j)]) for i in range(id)] for j in range(id)]) 
 
 
-def trainDoc2Vec(docs): 
+def trainDoc2Vec(docs, model_file): 
     """
     Train the doc2vec model on an array of TaggedDocuments.
     """
+    file_path = os.path.join(MODEL_PATH, model_file)
+    if os.path.isfile(file_path):
+        model = doc2vec.load(os.path.join(MODEL_PATH, model_file))
+        model.train(docs)
+    else:
+        cores = multiprocessing.cpu_count()
+        model = doc2vec.Doc2Vec(docs, size=100, window=10, min_count=2, workers=cores)
 
-    cores = multiprocessing.cpu_count()
-    model = doc2vec.Doc2Vec(docs, size=100, window=10, min_count=2, workers=cores)
+    model.save(file_path)
 
     return model
 

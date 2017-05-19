@@ -21,8 +21,8 @@ import os
 import csv_utils
 from gensim.models import doc2vec
 
-IMAGE_DIR = "../images"
-DATA_DIR = "../data"
+IMAGE_DIR = "images"
+DATA_DIR = "data"
 
 PNG = ".png"
 TSNE = "-T-SNE-"
@@ -32,7 +32,6 @@ TYPE_FB = "_fb"
 TYPE_TWITTER = "_twitter"
 TYPE_REDDIT = "_reddit"
 
-HEADERS = ['x', 'y', 'label']
 
 def visualizeSimilarities(subreddits, names, model, id, save_csv = False, name = ""):
 
@@ -81,7 +80,7 @@ def visualizeSimilarities(subreddits, names, model, id, save_csv = False, name =
     ax.legend()
 
 
-    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names) + TSNE + "2D" + PNG)
+    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names[:3]) + TSNE + "2D" + PNG)
     plt.savefig(image_path)
 
     # ... and in 3D
@@ -103,7 +102,7 @@ def visualizeSimilarities(subreddits, names, model, id, save_csv = False, name =
     ax.legend(loc = 'best')
 
 
-    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names) + TSNE + "3D" + PNG)
+    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names[:3]) + TSNE + "3D" + PNG)
     plt.savefig(image_path)
 
     # Then MDS, in 2D
@@ -123,7 +122,7 @@ def visualizeSimilarities(subreddits, names, model, id, save_csv = False, name =
         idx = next_idx
     ax.legend()
 
-    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names) + MDS + "2D" + PNG)
+    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names[:3]) + MDS + "2D" + PNG)
     plt.savefig(image_path)
 
     # ... and 3D
@@ -144,7 +143,7 @@ def visualizeSimilarities(subreddits, names, model, id, save_csv = False, name =
         idx = next_idx
     ax.legend(loc = 'best')
 
-    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names) + MDS + "3D" + PNG)
+    image_path = os.path.join(os.getcwd(), IMAGE_DIR, ("+").join(names[:3]) + MDS + "3D" + PNG)
     plt.savefig(image_path)
 
 
@@ -167,46 +166,54 @@ def main():
     parser.add_argument('--num_comments', default = 50, type=int, help='the number of facebook comments to scrape per post')
     parser.add_argument('--num_reddit_comments', default = 5000, type=int, help='the maximum number of Reddit comments to scrape per post')
     parser.add_argument('--num_posts', default = 50, type=int, help='the number of facebook posts to scrape per page')
+    parser.add_argument('--from_csv', default = False, type=bool, help='whether you already have the scraped data')
 
     args = parser.parse_args()
-    sheet = args.sheetname
-    if sheet is not None:
-        args = parser.parse_args(['--name', args.name, '--num_comments', args.num_comments, '--num_reddit_comments', args.num_reddit_comments, '--num_posts', args.num_posts] + csv_utils.parse_csv(sheet, args.startrow))
+    fromcsv = args.from_csv
+    if fromcsv:
+        names, all_comments = csv_utils.read_data_from_csv(args.sheetname)
 
-    comments = []
-    titles = []
-    tweets = []
-    page_ids = []
-    subreddits = []
-    twitters = []
+    else:
+        sheet = args.sheetname
+        if sheet is not None:
+            args = parser.parse_args(['--name', str(args.name), '--num_comments', str(args.num_comments), '--num_reddit_comments', str(args.num_reddit_comments), '--num_posts', str(args.num_posts)] + csv_utils.parse_csv(sheet, args.startrow))
 
-    if args.fb is not None:
-        page_ids = args.fb
-        for page_id in page_ids:
-            comments_full = fs.get_comments_from_id(page_id, args.num_posts, args.num_comments)
-            comments.append([(" ").join(fs.get_messages_from_comments(comments_full))])
-            csv_utils.comments_to_csv(args.name, page_id, comments_full, TYPE_FB)
+        comments = []
+        titles = []
+        tweets = []
+        page_ids = []
+        subreddits = []
+        twitters = []
 
-    if args.twitter is not None:
-        twitters = args.twitter
-        for twitter in twitters:
-            tweets_full = ts.get_tweets_from_screenname(twitter)
-            tweets.append([(" ").join(ts.get_messages_from_comments(tweets_full))])
-            csv_utils.comments_to_csv(args.name, twitter, tweets_full, TYPE_TWITTER)
+        if args.fb is not None:
+            page_ids = args.fb
+            for page_id in page_ids:
+                comments_full = fs.get_comments_from_id(page_id, args.num_posts, args.num_comments)
+                comments.append([(" ").join(fs.get_messages_from_comments(comments_full))])
+                csv_utils.comments_to_csv(args.name, page_id, comments_full, TYPE_FB)
 
-    if args.reddit is not None:
-        subreddits = args.reddit
-        for subreddit in subreddits:
-            titles_full = rs.get_comments_from_subreddit(subreddit, args.num_reddit_comments)
-            titles.append([(" ").join(rs.get_messages_from_comments(titles_full))])
-            csv_utils.comments_to_csv(args.name, subreddit, titles_full, TYPE_REDDIT)
+        if args.twitter is not None:
+            twitters = args.twitter
+            for twitter in twitters:
+                tweets_full = ts.get_tweets_from_screenname(twitter)
+                tweets.append([(" ").join(ts.get_messages_from_comments(tweets_full))])
+                csv_utils.comments_to_csv(args.name, twitter, tweets_full, TYPE_TWITTER)
 
-    print("Done saving CSV")
+        if args.reddit is not None:
+            subreddits = args.reddit
+            for subreddit in subreddits:
+                titles_full = rs.get_comments_from_subreddit(subreddit, args.num_reddit_comments)
+                titles.append([(" ").join(rs.get_messages_from_comments(titles_full))])
+                csv_utils.comments_to_csv(args.name, subreddit, titles_full, TYPE_REDDIT)
 
-    docs, id = models.preprocessDocs(comments+titles+tweets)
-    model = models.trainDoc2Vec(docs)
+        print("Done saving CSV")
+        names = page_ids + subreddits + twitters
+        all_comments = comments + titles + tweets
 
-    visualizeSimilarities(comments+titles+tweets, page_ids + subreddits+twitters, model, id, save_csv=True, name = args.name)
+    docs, id = models.preprocessDocs(all_comments)
+    model = models.trainDoc2Vec(docs, args.sheetname + "_model")
+
+    visualizeSimilarities(all_comments, names, model, id, save_csv=True, name = args.name)
 
 if __name__ == "__main__":
     main()
