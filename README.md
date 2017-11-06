@@ -9,7 +9,7 @@
       |_|                                                        
 ```
 
-OpenSOROS is a project to aggregate, analyze, visualize, and explain new types of discourse occurring on social media. The project seeks to learn about the factions duking it out in a political battleground which spans across countries, social media platforms, and languages. Its guided by questions like:
+OpenSOROS is a project to aggregate, analyze, visualize, and explain new types of discourse occurring on social media. Find our white paper [here](https://docs.google.com/document/d/17J5p62OXtkiTcl3Ud2SDg53H4iwUdu1r93NHNKYC_Os/edit?usp=sharing). Briefly, the project seeks to learn about the factions duking it out in on social media - a political battleground which spans across countries,  platforms, and languages. Its guided by questions like:
      
 How does belief in conspiracy theories vary with other political beliefs?
     
